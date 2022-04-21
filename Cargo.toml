@@ -1,0 +1,10 @@
+[workspace]
+members = [
+  "tailscale-localapi",
+  "tailscale-proxy",
+]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+debug = 1
