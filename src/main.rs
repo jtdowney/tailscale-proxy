@@ -22,6 +22,14 @@ pub struct Args {
     /// upstream to proxy connections to
     #[argh(option, short = 'u')]
     upstream: String,
+
+    /// path to the Tailscale socket (defaults to /var/run/tailscale/tailscaled.sock)
+    #[argh(
+        option,
+        short = 's',
+        default = "\"/var/run/tailscale/tailscaled.sock\".to_string()"
+    )]
+    socket: String,
 }
 
 #[tokio::main]
@@ -30,7 +38,7 @@ async fn main() -> eyre::Result<()> {
 
     let config: Arc<Args> = Arc::new(argh::from_env());
 
-    let localapi = tailscale_localapi::UnixClient::default();
+    let localapi = tailscale_localapi::LocalApi::new_with_socket_path(config.socket.clone());
     let status = localapi.status().await?;
 
     let tls_config = tls::create_config(&localapi, &status.cert_domains).await?;
@@ -50,7 +58,7 @@ async fn main() -> eyre::Result<()> {
 }
 
 async fn serve(
-    localapi: &tailscale_localapi::UnixClient,
+    localapi: &tailscale_localapi::LocalApi<tailscale_localapi::UnixStreamClient>,
     tls_acceptor: TlsAcceptor,
     config: Arc<Args>,
     listen_addresses: &[SocketAddr],

@@ -8,7 +8,7 @@ use rustls::{
 use tracing::{error, info};
 
 pub async fn create_config(
-    localapi: &tailscale_localapi::UnixClient,
+    localapi: &tailscale_localapi::LocalApi<tailscale_localapi::UnixStreamClient>,
     domains: &[String],
 ) -> eyre::Result<Arc<ServerConfig>> {
     let cert_resolver = Arc::new(TailscaleCertificateResolver {
@@ -26,7 +26,7 @@ pub async fn create_config(
 }
 
 struct TailscaleCertificateResolver {
-    client: tailscale_localapi::UnixClient,
+    client: tailscale_localapi::LocalApi<tailscale_localapi::UnixStreamClient>,
     domains: HashSet<String>,
 }
 
